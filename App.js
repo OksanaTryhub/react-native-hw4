@@ -1,100 +1,23 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
-  Text,
-  TextInput,
+  Keyboard,
   ImageBackground,
-  TouchableOpacity,
   TouchableWithoutFeedback,
-  Keyboard
-  // Platform
 } from "react-native";
-
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-
-SplashScreen.preventAutoHideAsync();
+import RegistrationScreen from "./assets/Screens/RegistrationScreen";
 
 export default function App() {
-  const [login, setLogin] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   
-  const loginHandler = (value) => setLogin(value);
-  const emailHandler = (value) => setEmail(value);
-  const passwordHandler = (value) => setPassword(value);
-
-  const [icon, setIcon] = useState('eye-off');
-
-  const iconChange = () => {
-    setIcon(prevIcon => prevIcon === 'eye-off' ? 'eye' : 'eye-off')
-  }
-
-  const onLogin = () => {
-    Keyboard.dismiss();
-    setLogin('');
-    setEmail('');
-    setPassword('');
-  }
-
-   const [fontsLoaded] = useFonts({
-     'Roboto-Regular': require('./assets/fonts/Roboto-Regular.ttf'),
-     'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
-   });
-  
-  const onLayoutRootView = async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  };
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <View style={styles.container} onLayout={onLayoutRootView}>
+      <View style={styles.container}>
         <ImageBackground source={require('./assets/images/bg.jpg')} style={styles.image}>
-          <View style={styles.form}>
-            <Text style={styles.title}>Регистрация</Text>
-            <TextInput style={styles.input}
-              placeholder="Логин"
-              value={login}
-              onChangeText={loginHandler}
-            />
-            <TextInput style={styles.input}
-              placeholder="Адрес электронной почты"
-              value={email}
-              onChangeText={emailHandler}
-            />
-            <View style={styles.inputWrap}>
-                <TextInput style={[styles.input, styles.password]}
-                placeholder="Пароль"
-                value={password}
-                secureTextEntry={icon === 'eye-off' ? true: false}
-                onChangeText={passwordHandler}
-              />
-                <TouchableOpacity activeOpacity={0.7} >
-                <Icon name={icon} style={styles.icon} onPress={() => iconChange() } /> 
-                </TouchableOpacity>
-            </View>
-            <TouchableOpacity activeOpacity={0.7} style={styles.button}>
-              <Text style={styles.buttonTitle} onPress={() => onLogin() }>Зарегистрироваться</Text>
-            </TouchableOpacity>
-            <View style={styles.acc}>
-              <Text style={styles.text}>Уже есть аккаунт?</Text>
-            <TouchableOpacity activeOpacity={0.7} >
-              <Text style={styles.text}> Войти</Text>
-            </TouchableOpacity>
-            </View>
-          </View>
+          <RegistrationScreen/>
         </ImageBackground>
-      </View>
-      
+      </View>  
 </TouchableWithoutFeedback>
   );
 }
@@ -103,6 +26,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+   image: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'flex-end',
+    },
+  avatarWrap: {
+    width: 120,
+    height: 120,
+    backgroundColor: '#F6F6F6',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    borderRadius: 16,
+    position: 'absolute',
+    top: -60,
+    right: '50%',
+    transform: [{ translateX: 40 }],
+  },
+  plusIcon: {
+    fontSize: 25,
+    position: 'absolute',
+    top: 80,
+    right: 0,
+    transform: [{ translateX: 12 }],
   },
   icon: {
     fontSize: 20,
@@ -115,19 +62,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline'
   },
-  image: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'flex-end',
-    },
   form: {
-    height: 549,
     paddingHorizontal: 16,
     paddingTop: 92,
+    paddingBottom: 78,
     backgroundColor: '#ffffff',
     width: '100%',
     borderTopRightRadius: 25,
-    borderTopLeftRadius: 25
+    borderTopLeftRadius: 25,
+    
 },
   input: {
     height:50,
@@ -147,8 +90,9 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Roboto-Bold',
     color: '#212121',
-    fontSize: 24,
-    marginBottom: 36,
+    fontSize: 30,
+    lineHeight: 35.16,
+    marginBottom: 33,
     textAlign: 'center',
     
   },
@@ -158,7 +102,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 16,
     fontFamily: 'Roboto-Regular',
 
   },
