@@ -10,10 +10,16 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image
 } from "react-native";
 
+import { AntDesign } from '@expo/vector-icons';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import * as ImagePicker from 'expo-image-picker';
+import { Asset } from "expo-asset";
+import * as FileSystem from 'expo-file-system';
 
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -21,14 +27,18 @@ import * as SplashScreen from 'expo-splash-screen';
 SplashScreen.preventAutoHideAsync();
 
 const initialState = {
+  login: '',
   email: '',
   password: ''
 }
-const LoginScreen = ({ navigation }) => {
-  const [state, setState] = useState(initialState);
+
+const RegistrationScreen = ({ navigation }) => {
+  const [state, setState] = useState(initialState)
   const [isShownKeyboard, setIsShownKeyboard] = useState(false);
   const [icon, setIcon] = useState('eye-off');
- 
+  const [plusIcon, setPlusIcon] = useState('plus')
+  const [image, setImage] = useState(null);
+
   const inputHandler = (name, value) => {
     setState((prevState) => ({ ...prevState, [name]: value }));
   };
@@ -47,16 +57,17 @@ const LoginScreen = ({ navigation }) => {
     Keyboard.dismiss()
   }
 
-  const onLogin = () => {
+  const handleSubmit = () => {
     setIsShownKeyboard(false);
     Keyboard.dismiss();
     setState(initialState);
     console.log(state)
+    navigation.navigate("Home");
   }
 
   const [fontsLoaded] = useFonts({
-     'Roboto-Regular': require('../fonts/Roboto-Regular.ttf'),
-     'Roboto-Bold': require('../fonts/Roboto-Bold.ttf'),
+     'Roboto-Regular': require('../../fonts/Roboto-Regular.ttf'),
+     'Roboto-Bold': require('../../fonts/Roboto-Bold.ttf'),
    });
   
   const onLayoutRootView = async () => {
@@ -69,13 +80,70 @@ const LoginScreen = ({ navigation }) => {
     return null;
   }
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission to access media library is required!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setImage(uri);
+      setPlusIcon('close')
+    }
+  };
+
+  const deleteImage = async () => {
+  if (image) {
+    const asset = Asset.fromURI(image);
+    const fileUri = asset.localUri || asset.uri;
+
+    await FileSystem.deleteAsync(fileUri);
+    setImage(
+      
+    );
+    setPlusIcon('plus')
+  }
+  };
+  
+  const plusIconChange = () => {
+    if (plusIcon === 'plus') {
+    console.log("pick image")
+         pickImage()
+       }
+      deleteImage()
+  }
+
   return (
     <TouchableWithoutFeedback onPress={() => keyboardHide()}>
       <View style={styles.container}>
-        <ImageBackground source={require('../images/bg.jpg')} style={styles.image}>
+        <ImageBackground source={require('../../images/bg.jpg')} style={styles.image}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''}>
-            <View style={{ ...styles.form, paddingBottom: isShownKeyboard ? 0 : 144 }} onLayout={onLayoutRootView}>
-              <Text style={styles.title}>Войти</Text>
+            <View style={{ ...styles.form, paddingBottom: isShownKeyboard ? 0 : 78 }} onLayout={onLayoutRootView}>
+              <View style={styles.avatarWrap}>
+                <View style={styles.photoWrap}>{image && <Image source={{ uri: image }} style={styles.image} />}</View>
+                <TouchableOpacity activeOpacity={0.7}>
+                  {plusIcon === 'plus'
+                    ? <AntDesign name="pluscircleo" style={{ ...styles.plusIcon, color: '#FF6C00' }} onPress={() => plusIconChange()} />
+                    : <AntDesign name="closecircleo" style={{ ...styles.plusIcon, color: '#E8E8E8' }} onPress={() => plusIconChange()} />}
+                </TouchableOpacity>
+                
+              </View>
+              <Text style={styles.title}>Регистрация</Text>
+              <TextInput style={styles.input}
+                  placeholder="Логин"
+                  value={state.login}
+                  onChangeText={(value) => inputHandler('login', value)}
+                  onFocus={()=>showKeyboard()}
+              />
               <TextInput style={styles.input}
                 placeholder="Адрес электронной почты"
                 value={state.email}
@@ -95,12 +163,12 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             <TouchableOpacity activeOpacity={0.7} style={styles.button}>
-              <Text style={styles.buttonTitle} onPress={() => onLogin() }>Войти</Text>
+              <Text style={styles.buttonTitle} onPress={() => handleSubmit() }>Зарегистрироваться</Text>
             </TouchableOpacity>
             <View style={styles.acc}>
-              <Text style={styles.text}>Нет аккаунта?</Text>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.navigate("Registration")}>
-                <Text style={styles.text}> Зарегистрироваться</Text>
+              <Text style={styles.text}>Уже есть аккаунт?</Text>
+              <TouchableOpacity activeOpacity={0.6} onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.text}> Войти</Text>
               </TouchableOpacity>
             </View>
             </View>
@@ -112,7 +180,7 @@ const LoginScreen = ({ navigation }) => {
 }
 
 
-export default LoginScreen
+export default RegistrationScreen
 
 const styles = StyleSheet.create({
   container: {
@@ -124,6 +192,33 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'flex-end',
     },
+  avatarWrap: {
+    width: 120,
+    height: 120,
+    backgroundColor: '#F6F6F6',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    borderRadius: 16,
+    position: 'absolute',
+    top: -60,
+    right: '50%',
+    transform: [{ translateX: 40 }],
+  },
+  photoWrap: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  plusIcon: {
+    fontSize: 25,
+    position: 'absolute',
+    top: -40,
+    right: 0,
+    transform: [{ translateX: 12 }],
+    borderRadius: 50,
+    backgroundColor: '#ffffff'
+  },
   icon: {
     fontSize: 20,
     color: '#1B4371',
@@ -137,7 +232,7 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingHorizontal: 16,
-    paddingTop: 32,
+    paddingTop: 92,
     paddingBottom: 78,
     backgroundColor: '#ffffff',
     width: '100%',
@@ -165,7 +260,7 @@ const styles = StyleSheet.create({
     color: '#212121',
     fontSize: 30,
     lineHeight: 35.16,
-    marginBottom: 32,
+    marginBottom: 33,
     textAlign: 'center',
     
   },

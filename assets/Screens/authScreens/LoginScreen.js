@@ -10,16 +10,10 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  Platform,
-  Image
+  Platform
 } from "react-native";
 
-
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import PlusIcon from 'react-native-vector-icons/SimpleLineIcons';
-import * as ImagePicker from 'expo-image-picker';
-import { Asset } from "expo-asset";
-import * as FileSystem from 'expo-file-system';
 
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -27,18 +21,14 @@ import * as SplashScreen from 'expo-splash-screen';
 SplashScreen.preventAutoHideAsync();
 
 const initialState = {
-  login: '',
   email: '',
   password: ''
 }
-
-const RegistrationScreen = ({ navigation }) => {
-  const [state, setState] = useState(initialState)
+const LoginScreen = ({ navigation }) => {
+  const [state, setState] = useState(initialState);
   const [isShownKeyboard, setIsShownKeyboard] = useState(false);
   const [icon, setIcon] = useState('eye-off');
-  const [plusIcon, setPlusIcon] = useState('plus')
-  const [image, setImage] = useState(null);
-
+ 
   const inputHandler = (name, value) => {
     setState((prevState) => ({ ...prevState, [name]: value }));
   };
@@ -57,16 +47,17 @@ const RegistrationScreen = ({ navigation }) => {
     Keyboard.dismiss()
   }
 
-  const onLogin = () => {
+  const handleSubmit = () => {
     setIsShownKeyboard(false);
     Keyboard.dismiss();
     setState(initialState);
     console.log(state)
+    navigation.navigate("Home");
   }
 
   const [fontsLoaded] = useFonts({
-     'Roboto-Regular': require('../fonts/Roboto-Regular.ttf'),
-     'Roboto-Bold': require('../fonts/Roboto-Bold.ttf'),
+     'Roboto-Regular': require('../../fonts/Roboto-Regular.ttf'),
+     'Roboto-Bold': require('../../fonts/Roboto-Bold.ttf'),
    });
   
   const onLayoutRootView = async () => {
@@ -79,64 +70,13 @@ const RegistrationScreen = ({ navigation }) => {
     return null;
   }
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access media library is required!');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setImage(uri);
-      setPlusIcon('close')
-    }
-  };
-
-  const deleteImage = async () => {
-  if (image) {
-    const asset = Asset.fromURI(image);
-    const fileUri = asset.localUri || asset.uri;
-
-    await FileSystem.deleteAsync(fileUri);
-    setImage(null);
-    setPlusIcon('plus')
-  }
-  };
-  
-  const plusIconChange = () => {
-    if (plusIcon === 'plus') {
-         pickImage()
-       }
-      deleteImage()
-  }
-
   return (
     <TouchableWithoutFeedback onPress={() => keyboardHide()}>
       <View style={styles.container}>
-        <ImageBackground source={require('../images/bg.jpg')} style={styles.image}>
+        <ImageBackground source={require('../../images/bg.jpg')} style={styles.image}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''}>
-            <View style={{ ...styles.form, paddingBottom: isShownKeyboard ? 0 : 78 }} onLayout={onLayoutRootView}>
-              <View style={styles.avatarWrap}>
-                <TouchableOpacity activeOpacity={0.7}>
-                  <PlusIcon name={plusIcon} style={{...styles.plusIcon, color: plusIcon === 'plus'? '#FF6C00' : '#E8E8E8'}} onPress={() => plusIconChange()} /> 
-                </TouchableOpacity>
-                {image && <Image source={{ uri: image }} style={styles.image} />}
-              </View>
-              <Text style={styles.title}>Регистрация</Text>
-              <TextInput style={styles.input}
-                  placeholder="Логин"
-                  value={state.login}
-                  onChangeText={(value) => inputHandler('login', value)}
-                  onFocus={()=>showKeyboard()}
-              />
+            <View style={{ ...styles.form, paddingBottom: isShownKeyboard ? 0 : 144 }} onLayout={onLayoutRootView}>
+              <Text style={styles.title}>Войти</Text>
               <TextInput style={styles.input}
                 placeholder="Адрес электронной почты"
                 value={state.email}
@@ -156,12 +96,12 @@ const RegistrationScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             <TouchableOpacity activeOpacity={0.7} style={styles.button}>
-              <Text style={styles.buttonTitle} onPress={() => onLogin() }>Зарегистрироваться</Text>
+              <Text style={styles.buttonTitle} onPress={() => handleSubmit() }>Войти</Text>
             </TouchableOpacity>
             <View style={styles.acc}>
-              <Text style={styles.text}>Уже есть аккаунт?</Text>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.navigate("Login")}>
-                <Text style={styles.text}> Войти</Text>
+              <Text style={styles.text}>Нет аккаунта?</Text>
+              <TouchableOpacity activeOpacity={0.6} onPress={() => navigation.navigate("Registration")}>
+                <Text style={styles.text}> Зарегистрироваться</Text>
               </TouchableOpacity>
             </View>
             </View>
@@ -173,7 +113,7 @@ const RegistrationScreen = ({ navigation }) => {
 }
 
 
-export default RegistrationScreen
+export default LoginScreen
 
 const styles = StyleSheet.create({
   container: {
@@ -185,25 +125,6 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'flex-end',
     },
-  avatarWrap: {
-    width: 120,
-    height: 120,
-    backgroundColor: '#F6F6F6',
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
-    borderRadius: 16,
-    position: 'absolute',
-    top: -60,
-    right: '50%',
-    transform: [{ translateX: 40 }],
-  },
-  plusIcon: {
-    fontSize: 25,
-    position: 'absolute',
-    top: 80,
-    right: 0,
-    transform: [{ translateX: 12 }],
-  },
   icon: {
     fontSize: 20,
     color: '#1B4371',
@@ -217,7 +138,7 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingHorizontal: 16,
-    paddingTop: 92,
+    paddingTop: 32,
     paddingBottom: 78,
     backgroundColor: '#ffffff',
     width: '100%',
@@ -245,7 +166,7 @@ const styles = StyleSheet.create({
     color: '#212121',
     fontSize: 30,
     lineHeight: 35.16,
-    marginBottom: 33,
+    marginBottom: 32,
     textAlign: 'center',
     
   },
